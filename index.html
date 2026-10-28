@@ -1,1 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Mamthethwa Clothing — Pretoria</title>
+<link rel="stylesheet" href="style/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<header>
+  <div class="logo">MAMTHETHWA<span>CLOTHING</span></div>
+  <nav class="mini-nav"><a href="#home">Home</a><a href="#shop">Shop</a><a href="#track">Track</a><a href="#contact">Contact</a></nav>
+  <div class="header-right"><a href="admin.html" class="admin-pill">ADMIN</a><div class="cart-btn" onclick="openCart()">🛒 <span id="cartCount">0</span></div></div>
+</header>
+<div class="marquee"><div class="marquee-track"><span> ♡ MAMTHETHWA CLOTHING ♡ PRETORIA ♡ SNEAKERS R950 ♡ COMBO 1700 ♡ OPEN 24 HOURS ♡ </span><span> ♡ MAMTHETHWA CLOTHING ♡ PRETORIA ♡ SNEAKERS R950 ♡ COMBO 1700 ♡ OPEN 24 HOURS ♡ </span></div></div>
 
+<section id="home" class="hero">
+  <div class="hero-left">
+    <div class="badge">● OPEN 24 HOURS • PRETORIA</div>
+    <h1>PRETTY<br><span>ON A BUDGET</span></h1>
+    <p class="hero-sub">Sell sneakers 👟 Beauty, cosmetic & personal care, Apparel & clothing</p>
+    <div class="rating-big">★★★★★ <b>5.0</b> • 1,200+ Happy Clients • Pretoria</div>
+    <a href="#shop" class="btn-pink">Shop Collection ♡</a>
+  </div>
+  <div class="hero-float"><div class="float-card f1">R950</div><div class="float-card f2">COMBO 1700</div></div>
+</section>
+
+<section id="shop" class="shop-section">
+  <div class="section-top">
+    <h3>SHOP BY CATEGORY</h3>
+    <div class="cat-filter" id="catFilter">
+      <button class="cat-btn active" onclick="filterCat('all',this)">All</button>
+      <button class="cat-btn" onclick="filterCat('Sneakers',this)">Sneakers</button>
+      <button class="cat-btn" onclick="filterCat('Adidas',this)">Adidas</button>
+      <button class="cat-btn" onclick="filterCat('Combo',this)">Combo</button>
+      <button class="cat-btn" onclick="filterCat('Apparel',this)">Apparel</button>
+      <button class="cat-btn" onclick="filterCat('Beauty',this)">Beauty</button>
+    </div>
+  </div>
+  <div class="products" id="products"></div>
+</section>
+
+<section class="info-section">
+  <div class="info-card"><div class="ic">📞</div> +27 65 554 9854 <span class="green">• Open now</span></div>
+  <div class="info-card"><div class="ic">⏰</div><div><b>Open 24 hours</b><br><small>Mon-Sun • Pretoria</small></div></div>
+  <div class="hours" id="hoursBox"></div>
+  <div class="info-card"><div class="ic">✨</div> Local service, Beauty, cosmetic & personal care, Apparel & clothing</div>
+  <div class="info-card map"><div class="ic">📍</div> Pretoria, South Africa • PAXI Available Nationwide</div>
+</section>
+
+<section id="track" class="track-section"><h3>TRACK ORDER — MT CODE</h3><div class="track-row"><input id="trackInput" placeholder="MT1234"><button class="btn-pink" onclick="trackOrder()">Track</button></div><div id="trackResult"></div></section>
+
+<section id="contact" class="contact-section">
+  <h3>CONTACT HER</h3>
+  <p>WhatsApp: +27 65 554 9854 • Pretoria • Open 24 Hours</p>
+  <a class="btn-pink full" href="https://wa.me/27655549854">Chat on WhatsApp ♡</a>
+</section>
+
+<!-- PRODUCT MODAL -->
+<div id="productModal" class="modal hidden">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal('productModal')">×</span>
+    <div class="gallery"><img id="mImage" class="m-img"><div class="thumbs" id="mThumbs"></div></div>
+    <div class="p-head"><h3 id="mName"></h3><button class="like-btn" id="likeBtn" onclick="toggleLike()">♡ <span id="likeCount">0</span></button></div>
+    <div class="rating-row"><span id="mStars">★★★★★</span> <b id="mAvg">5.0</b> <small id="mRCount"></small></div>
+    <p id="mPrice" class="price"></p><p id="mCat" class="small"></p>
+    <div class="stock-bar"><div id="stockFill"></div></div><p id="mStock" class="small"></p>
+    <label>Size *</label><select id="mSize"></select>
+    <label>Qty</label><input type="number" id="mQty" value="1" min="1"><p id="mQtyError" class="error"></p>
+    <button class="btn-pink full" onclick="addToCart()">Add to Bag ♡</button>
+    <hr><h4>Rate this ♡</h4><div class="rate-input"><span onclick="rateProduct(1)">★</span><span onclick="rateProduct(2)">★</span><span onclick="rateProduct(3)">★</span><span onclick="rateProduct(4)">★</span><span onclick="rateProduct(5)">★</span></div>
+  </div>
+</div>
+
+<!-- CART MODAL -->
+<div id="cartModal" class="modal hidden">
+  <div class="modal-content"><span class="close" onclick="closeModal('cartModal')">×</span><h3>Your Bag ♡</h3><div id="cartItems"></div><div id="cartTotal" class="total"></div><hr>
+    <form onsubmit="submitOrder(event)">
+      <label>Full Name *</label><input id="custName" required><label>WhatsApp *</label><input id="custPhone" required>
+      <label>Delivery Method *</label><select id="custCampus" required><option value="">Select</option><option>Around Pretoria</option><option>Outside Pretoria - PAXI</option><option>Pickup - Pretoria</option></select>
+      <label>Address / Room</label><input id="custAddress"><button class="btn-pink full">Place Order • Get MT Code</button>
+    </form>
+  </div>
+</div>
+
+<footer><div>MAMTHETHWA CLOTHING ♡ Pretoria • Open 24H</div><div>Built with ♡</div></footer>
+<script src="js/script.js"></script>
+</body>
+  </html>
