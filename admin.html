@@ -1,6 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ADMIN — Mamthethwa</title><link rel="stylesheet" href="style/style.css"></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ADMIN — Mamthethwa</title><link rel="stylesheet" href="style/style.css">
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyBeaXMto9uEuqswlZNB4zWgTuNLhGKY1mM",
+  authDomain: "mamthethwa-db.firebaseapp.com",
+  projectId: "mamthethwa-db",
+  storageBucket: "mamthethwa-db.firebasestorage.app",
+  messagingSenderId: "884680583899",
+  appId: "1:884680583899:web:685d16794860485afd7afe"
+};
+const app = initializeApp(firebaseConfig);
+window.db = getFirestore(app);
+window.fbMethods = { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot };
+console.log("✅ Mamthethwa linked");
+</script>
+</head>
 <body>
 <header><div class="logo">ADMIN <span>MAMTHETHWA</span></div><div class="header-right"><a href="index.html" class="admin-pill">SHOP</a><button class="admin-pill" onclick="adminLogout()">LOGOUT</button></div></header>
 
