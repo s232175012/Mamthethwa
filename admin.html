@@ -4,6 +4,8 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyBeaXMto9uEuqswlZNB4zWgTuNLhGKY1mM",
   authDomain: "mamthethwa-db.firebaseapp.com",
@@ -12,10 +14,14 @@ const firebaseConfig = {
   messagingSenderId: "884680583899",
   appId: "1:884680583899:web:685d16794860485afd7afe"
 };
+
 const app = initializeApp(firebaseConfig);
-window.db = getFirestore(app);
-window.fbMethods = { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot };
-console.log("✅ Mamthethwa linked");
+const db = getFirestore(app);
+const auth = getAuth(app);
+window.db = db;
+window.auth = auth;
+window.fbMethods = { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, signInWithEmailAndPassword, signOut, onAuthStateChanged };
+console.log("✅ MAMTHETHWA linked to mamthethwa-db with Admin Auth");
 </script>
 </head>
 <body>
