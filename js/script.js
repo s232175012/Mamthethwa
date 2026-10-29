@@ -1,16 +1,14 @@
-const WHATSAPP="27697479557"; // Mamthethwa WhatsApp - change if different
-const ADMIN={u:"admin",p:"mamthethwa123"};
+const WHATSAPP="27697479557";
 let tempImgs=["","","","",""];
 let products=[], cart=[], current=null, activeCat='all';
 
-// FIREBASE
 const getDB = () => window.db;
 const getFB = () => window.fbMethods;
+const getAuth = () => window.auth;
 
 function avg(arr){if(!arr||!arr.length)return 4.9;return (arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1)}
 function toast(m){let d=document.createElement('div');d.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 16px;border-radius:999px;font-size:11px;font-weight:800;z-index:999;';d.innerText=m;document.body.appendChild(d);setTimeout(()=>d.remove(),2500)}
 
-// LOAD FROM FIREBASE - MAMTHETHWA COLLECTIONS
 async function loadProducts(){
   if(!getDB()||!getFB()){ setTimeout(loadProducts,500); return; }
   const { collection, onSnapshot } = getFB();
@@ -23,7 +21,6 @@ async function loadProducts(){
 }
 loadProducts();
 
-// SHOP
 if(document.getElementById('products')){
   function render(){
     const box=document.getElementById('products'); if(!box) return; box.innerHTML="";
@@ -39,11 +36,7 @@ if(document.getElementById('products')){
     });
     const cc=document.getElementById('cartCount'); if(cc) cc.innerText=cart.reduce((a,b)=>a+b.qty,0);
   }
-  window.filterCat=(cat,btn)=>{
-    activeCat=cat;
-    document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
-    if(btn) btn.classList.add('active'); render();
-  }
+  window.filterCat=(cat,btn)=>{ activeCat=cat; document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active')); if(btn) btn.classList.add('active'); render(); }
   window.openProduct=id=>{
     current=products.find(x=>x.id==id);
     document.getElementById('mImage').src=current.images[0];
@@ -81,10 +74,7 @@ if(document.getElementById('products')){
     try{
       const { collection, addDoc, doc, updateDoc } = getFB();
       await addDoc(collection(getDB(), "mamthethwa_orders"), order);
-      for(let c of cart){
-        const prod = products.find(p=>p.id==c.id);
-        if(prod){ const newSizes = {...prod.sizes}; newSizes[c.size]-=c.qty; await updateDoc(doc(getDB(), "mamthethwa_products", prod.id), {sizes:newSizes}); }
-      }
+      for(let c of cart){ const prod = products.find(p=>p.id==c.id); if(prod){ const newSizes = {...prod.sizes}; newSizes[c.size]-=c.qty; await updateDoc(doc(getDB(), "mamthethwa_products", prod.id), {sizes:newSizes}); } }
     }catch(err){ console.error(err); }
     const msg=`👗 MAMTHETHWA ORDER ${code} 👗\n${list}\nTotal R${total}\nName: ${name}\nPhone: ${phone}\nDelivery: ${del}\nAddr: ${addr}\nTrack: ${code}`;
     window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`,'_blank');
@@ -101,7 +91,6 @@ if(document.getElementById('products')){
   }
 }
 
-// ADMIN
 if(document.getElementById('loginBox')){
   window.handleImg=(input,idx)=>{
     const file=input.files[0]; if(!file) return;
@@ -115,10 +104,25 @@ if(document.getElementById('loginBox')){
       }; img.src=e.target.result;
     }; reader.readAsDataURL(file);
   }
-  window.adminLogin=()=>{const u=document.getElementById('lUser').value,p=document.getElementById('lPass').value;if(u==ADMIN.u&&p==ADMIN.p){localStorage.setItem('MT_ADMIN','yes');showAdmin()}else{document.getElementById('lError').innerText="Wrong login"}}
-  window.adminLogout=()=>{localStorage.removeItem('MT_ADMIN');location.reload()}
+
+  // SECURE ADMIN LOGIN - FIXED
+  window.adminLogin=async ()=>{
+    const inputUser = document.getElementById('lUser').value.trim().toLowerCase();
+    const pass = document.getElementById('lPass').value.trim();
+    let email = document.getElementById('lUser').value.trim();
+    if(inputUser==='admin' || inputUser==='mamthethwa') email='mamthethwa@admin.com';
+    if(inputUser==='blackink') email='blackink@admin.com';
+    try{
+      await getFB().signInWithEmailAndPassword(getAuth(), email, pass);
+      showAdmin();
+      toast("✅ Welcome "+email);
+    }catch(e){ document.getElementById('lError').innerText = e.message; console.error(e); }
+  }
+  
+  window.adminLogout=async ()=>{ try{ await getFB().signOut(getAuth()); }catch(e){} localStorage.removeItem('MT_ADMIN'); location.reload(); }
   window.switchTab=t=>{document.querySelectorAll('.admin-card').forEach(c=>c.classList.add('hidden'));document.getElementById('tab-'+t).classList.remove('hidden');document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');if(t=='products')renderAdminP();if(t=='orders')renderAdminO()}
   function showAdmin(){document.getElementById('loginBox').classList.add('hidden');document.getElementById('adminPanel').classList.remove('hidden');renderAdminP();renderAdminO()}
+  
   window.addProduct=async ()=>{
     const name=document.getElementById('aName').value,price=parseInt(document.getElementById('aPrice').value),cat=document.getElementById('aCat')?.value||"Dress",sizesStr=document.getElementById('aSizes').value;
     const imgs=tempImgs.filter(x=>x); if(!name||!price||imgs.length==0){alert("Need Name, Price, at least 1 pic");return}
@@ -131,18 +135,28 @@ if(document.getElementById('loginBox')){
       toast('✅ Mamthethwa Product Published!');
       tempImgs=["","","","",""]; document.querySelectorAll('.prev').forEach(i=>{i.style.display='none';i.src=''}); document.querySelectorAll('.upload-box').forEach(b=>b.classList.remove('has'));
       document.getElementById('aName').value=""; document.getElementById('aPrice').value=""; document.getElementById('aSizes').value="";
-    }catch(e){ alert("Firebase error: "+e.message); }
+    }catch(e){ alert("Firebase error: "+e.message+" — Make sure you are logged in with mamthethwa@admin.com"); }
   }
+  
   function renderAdminP(){const box=document.getElementById('adminProducts');if(!box)return;box.innerHTML="";products.forEach(p=>{box.innerHTML+=`<div style="display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #eee"><img src="${p.images[0]}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;border:1.5px solid #111"><span style="flex:1"><b>${p.name}</b> (${p.cat})<br><small>R${p.price} • ${Object.entries(p.sizes||{}).map(([k,v])=>k+':'+v).join(', ')}</small></span><button onclick="deleteProd('${p.id}')" style="color:red;border:none;background:none;font-weight:800">🗑️</button></div>`})}
-  window.deleteProd=async id=>{ if(!confirm("Delete?")) return; const { doc, deleteDoc } = getFB(); await deleteDoc(doc(getDB(), "mamthethwa_products", id)); toast("Deleted"); }
+  
+  window.deleteProd=async id=>{ 
+    if(!confirm("Delete this Mamthethwa product?")) return; 
+    try{ const { doc, deleteDoc } = getFB(); await deleteDoc(doc(getDB(), "mamthethwa_products", id)); toast("Deleted ✅"); }catch(e){ alert("Delete failed: "+e.message+" — Are you logged in?"); } 
+  }
+  
   async function renderAdminO(){
     const tbody=document.getElementById('adminOrders');if(!tbody)return;
-    const { collection, getDocs } = getFB();
-    const snap = await getDocs(collection(getDB(), "mamthethwa_orders"));
-    const orders = snap.docs.map(d=>({id:d.id, ...d.data()})).sort((a,b)=>b.createdAt-a.createdAt);
-    tbody.innerHTML="";orders.forEach(o=>{tbody.innerHTML+=`<tr><td><b>${o.code}</b></td><td>${o.name}</td><td>${o.phone}</td><td>${o.address}</td><td>${o.items.map(i=>`${i.name} ${i.size} x${i.qty}`).join('<br>')}</td><td>R${o.total}</td><td><select onchange="changeStatus('${o.id}',this.value)"><option ${o.status=='Pending'?'selected':''}>Pending</option><option ${o.status=='Confirmed'?'selected':''}>Confirmed</option><option ${o.status=='Packed'?'selected':''}>Packed</option><option ${o.status=='Shipped'?'selected':''}>Shipped</option><option ${o.status=='Delivered'?'selected':''}>Delivered</option></select></td><td>${o.est}</td><td>${o.date}</td><td><button onclick="deleteOrder('${o.id}')" style="color:red;border:none;background:none">✕</button></td></tr>`})
+    try{
+      const { collection, getDocs } = getFB();
+      const snap = await getDocs(collection(getDB(), "mamthethwa_orders"));
+      const orders = snap.docs.map(d=>({id:d.id, ...d.data()})).sort((a,b)=>b.createdAt-a.createdAt);
+      tbody.innerHTML="";orders.forEach(o=>{tbody.innerHTML+=`<tr><td><b>${o.code}</b></td><td>${o.name}</td><td>${o.phone}</td><td>${o.address}</td><td>${o.items.map(i=>`${i.name} ${i.size} x${i.qty}`).join('<br>')}</td><td>R${o.total}</td><td><select onchange="changeStatus('${o.id}',this.value)"><option ${o.status=='Pending'?'selected':''}>Pending</option><option ${o.status=='Confirmed'?'selected':''}>Confirmed</option><option ${o.status=='Packed'?'selected':''}>Packed</option><option ${o.status=='Shipped'?'selected':''}>Shipped</option><option ${o.status=='Delivered'?'selected':''}>Delivered</option></select></td><td>${o.est}</td><td>${o.date}</td><td><button onclick="deleteOrder('${o.id}')" style="color:red;border:none;background:none">✕</button></td></tr>`})
+    }catch(e){ tbody.innerHTML="<tr><td colspan='10'>Login first to see orders - Use mamthethwa@admin.com</td></tr>"; }
   }
-  window.changeStatus=async (docId,val)=>{const { doc, updateDoc } = getFB(); await updateDoc(doc(getDB(), "mamthethwa_orders", docId), {status:val}); renderAdminO();}
-  window.deleteOrder=async docId=>{const { doc, deleteDoc } = getFB(); await deleteDoc(doc(getDB(), "mamthethwa_orders", docId)); renderAdminO();}
-  if(localStorage.getItem('MT_ADMIN')=='yes'){showAdmin()}
+  window.changeStatus=async (docId,val)=>{try{const { doc, updateDoc } = getFB(); await updateDoc(doc(getDB(), "mamthethwa_orders", docId), {status:val}); renderAdminO();}catch(e){alert(e.message)}}
+  window.deleteOrder=async docId=>{ if(!confirm("Delete order?")) return; try{const { doc, deleteDoc } = getFB(); await deleteDoc(doc(getDB(), "mamthethwa_orders", docId)); renderAdminO();}catch(e){alert(e.message)}}
+  
+  // AUTO LOGIN
+  getFB().onAuthStateChanged(getAuth(), (user)=>{ if(user){ showAdmin(); } });
 }
