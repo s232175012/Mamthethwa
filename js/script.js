@@ -1,4 +1,4 @@
-const WHATSAPP="27697479557";
+const WHATSAPP="27";
 let tempImgs=["","","","",""];
 let products=[], cart=[], current=null, activeCat='all';
 
